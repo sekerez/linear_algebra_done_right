@@ -1,4 +1,4 @@
-# linear_algebra_done_right
+# Linear Algebra Done Right
 ### engineers doing proofs
 
 Welcome! This is a repo where the Linear Algebra Done Right group meets to share their solutions to exercises.
