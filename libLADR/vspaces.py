@@ -54,6 +54,10 @@ def is_linearly_indepenent(vecs):
         return False
 
 
+# 2.5 Definition span
+# The set of all linear combinations of a list of vectors [v_1, v_2, ..., v_m]
+# The span of the empty list `[]` is defined to be the set containing the zero vector.
+
 def is_in_span(vec, vecs):
     """
     Returns True if vector `vec` is in the span of vectors `vecs`.
