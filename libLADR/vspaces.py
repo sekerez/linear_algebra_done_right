@@ -5,6 +5,32 @@ from sympy import symbols
 
 
 
+# Helper methods for interpeting the rsults of `solve` for linear combinations.
+
+def no_solution(sol):
+    """
+    SymPy solve returns [] when there is no solution to given equation.
+    """
+    if sol == []:
+        return True
+    else:
+        return False
+
+
+def all_zeros(sol):
+    """
+    Returns True if the solution is the all zeros solution.
+    """
+    if no_solution(sol):
+        return False
+    values = sol.values()
+    all_zero_values = not any(values)
+    if all_zero_values:
+        return True
+    else:
+        return False
+
+
 
 # 2.17 Definition linearly independent
 # A list vecs = [v_1, v_2, ..., v_m] of vectors in V is called
@@ -22,11 +48,37 @@ def is_linearly_indepenent(vecs):
     alphas = symbols("\\alpha_" + str(1) + ":" + str(n+1))
     lin_comb = Add(*[alpha*vec for alpha, vec in zip(alphas,vecs)])
     sol = solve(lin_comb, alphas)
-    #print(sol)
-    if sol == [] or not any(sol.values()):
+    if no_solution(sol) or all_zeros(sol):
         return True
     else:
         return False
+
+
+def is_in_span(vec, vecs):
+    """
+    Returns True if vector `vec` is in the span of vectors `vecs`.
+    """
+    # special handling of case when list of vectors is the empty list []
+    if len(vecs) == 0:
+        if vec.is_zero_matrix:
+            return True
+        else:
+            return False
+
+    # we want to solve the equation   vec = a1*v1 + a2*v2 + ... + an*vn
+    # which is equivalent to the equation vec - a1*v1 - a2*v2 - ... - an*vn = 0.
+    n = len(vecs)
+    alphas = symbols("\\alpha_" + str(1) + ":" + str(n+1))
+    alphavecs = [ alpha*vec for alpha, vec in zip(alphas, vecs) ]
+    lin_comb = Add(*alphavecs)
+    sol = solve(vec - lin_comb, alphas)
+    if no_solution(sol):
+        return False  # no solution, so `vec` is not in the span of `vecs`
+    elif all_zeros(sol):
+        # trivial solution exists, which means `vec` is the zero vector
+        return True   # by convention, zero vec is in span of any set of vecs
+    else:
+        return True   # a solution exists, so vec must be in the span of `vecs`
 
 
     
@@ -37,40 +89,15 @@ def is_linearly_indepenent(vecs):
 # (b) if the jth term is removed from [v_1, v_2, ..., v_m],
 #     the span of the remaining list equals span(v_1, v_2, ..., v_m)
 
-def reduce_list(vecs):
+def reduce_list_of_dep_vectors(vecs):
     """
     Remove the first vector that can be written as a linear combination
     of the preceding vectors in a list of linearly dependent vectors.
     """
     m = len(vecs)
-    alphas = symbols("\\alpha_" + str(1) + ":" + str(m+1))
-
     for j in range(0, m):
         vj = vecs[j]
-        print("\nChecking if vector j =", j, vj, "is redundant")
-        
-        if j == 0 and vj.is_zero_matrix:
-            return vecs[1:]
-
-        alphas_until_jminus1 = alphas[0:j]
-        vecs_until_jminus1 = vecs[0:j]
-        alphavecs_until_jminus1 = [
-            alpha*vec for alpha, vec
-            in zip(alphas_until_jminus1, vecs_until_jminus1)
-        ]
-        if alphavecs_until_jminus1:
-            lin_comb = Add(*alphavecs_until_jminus1)
-            expr = vj - lin_comb
-        else:
-            expr = vj
-
-        sol = solve(expr, alphas_until_jminus1)
-        print("  sol =", sol)
-        if sol == []:
-            print("  no solution, so keeping vj")
-            continue
-        else:
-            print("  found solution, so vj is can be dropped")
+        if is_in_span(vj, vecs[0:j]):
             reduced_vecs = vecs[0:j] + vecs[j+1:]
             return reduced_vecs
     return vecs
@@ -86,5 +113,7 @@ def spanning_set2basis(vecs):
     Reduce the spanning set of vectors `vecs` to a basis.
     """
     while not is_linearly_indepenent(vecs):
-        vecs = reduce_list(vecs)
+        vecs = reduce_list_of_dep_vectors(vecs)
     return vecs
+
+

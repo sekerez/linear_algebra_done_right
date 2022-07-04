@@ -65,18 +65,18 @@ def test_lin_indep_sets(lin_indep_set):
 ################################################################################
 
 # SUT2
-from ..vspaces import reduce_list
+from ..vspaces import reduce_list_of_dep_vectors
 
 
 def test_reduces_zero_vec():
     zerovec = Vector([0,0])
-    reduced_list = reduce_list([zerovec])
+    reduced_list = reduce_list_of_dep_vectors([zerovec])
     assert len(reduced_list) == 0, "should be empty list"
 
 
 def test_reduces_dep_set(lin_dep_set):
     assert is_linearly_indepenent(lin_dep_set) == False, "should be dependent"
-    reduced_list = reduce_list(lin_dep_set)
+    reduced_list = reduce_list_of_dep_vectors(lin_dep_set)
     assert len(reduced_list) < len(lin_dep_set), "should have fewer elements"
     assert reduced_list[0] == lin_dep_set[0], "should have the same first elements"
 
@@ -85,21 +85,21 @@ def test_reduces_list_containing_zero(lin_indep_set):
     zerovec = Vector([0,0])
     # Case 0: zero vec first
     zerofirst = [zerovec] + lin_indep_set
-    reduced_list = reduce_list(zerofirst)
+    reduced_list = reduce_list_of_dep_vectors(zerofirst)
     assert equal_lists(reduced_list, lin_indep_set), "should reduce to original"
     # Case 1: zero vec in the middle
     zeromiddle = [lin_indep_set[0]] + [zerovec] + lin_indep_set[1:]
-    reduced_list = reduce_list(zeromiddle)
+    reduced_list = reduce_list_of_dep_vectors(zeromiddle)
     assert equal_lists(reduced_list, lin_indep_set), "should reduce to original"
     # Case m: zero vec at the end
     zerolast = lin_indep_set + [zerovec]
-    reduced_list = reduce_list(zerolast)
+    reduced_list = reduce_list_of_dep_vectos(zerolast)
     assert equal_lists(reduced_list, lin_indep_set), "should reduce to original"
 
 
 def test_leaves_lin_indep_set_unchanged(lin_indep_set):
     assert is_linearly_indepenent(lin_indep_set) == True, "should be independent"
-    reduced_list = reduce_list(lin_indep_set)
+    reduced_list = reduce_list_of_dep_vectors(lin_indep_set)
     assert equal_lists(reduced_list, lin_indep_set), "should be the same"
 
 
@@ -135,6 +135,12 @@ def test_removes_zero_vector(lin_indep_set):
     # Case m: zero vec at the end
     zerolast = lin_indep_set + [zerovec]
     basis = spanning_set2basis(zerolast)
+    assert equal_lists(basis, lin_indep_set), "should reduce to original"
+
+
+def test_removes_duplicates(lin_indep_set):
+    double = lin_indep_set + lin_indep_set
+    basis = spanning_set2basis(double)
     assert equal_lists(basis, lin_indep_set), "should reduce to original"
 
 
