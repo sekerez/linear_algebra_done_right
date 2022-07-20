@@ -1,0 +1,7 @@
+sympy
+
+# interactive testing
+jupyterlab
+
+# automated testing
+pytest
